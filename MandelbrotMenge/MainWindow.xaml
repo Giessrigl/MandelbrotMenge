@@ -20,13 +20,12 @@
                 <Button DockPanel.Dock="Left" Width=" 100" Margin="10" FontSize="25" Command="{Binding CalculateCommand}">Calculate</Button>
             </DockPanel>
             <DockPanel Height="50" Width="200" Margin="0,0,160,0">
-                <TextBox DockPanel.Dock="Left" Width="100" Margin="10" FontSize="25" Text="{Binding MBC.Steps_XAxis}"></TextBox>
-                <TextBox DockPanel.Dock="Left" Width="100" Margin="10" FontSize="25" Text="{Binding MBC.Steps_YAxis}"></TextBox>
+                <TextBox DockPanel.Dock="Left" Margin="10" FontSize="25" Text="{Binding Iterations}"></TextBox>
             </DockPanel>
         </StackPanel>
         <ScrollViewer HorizontalScrollBarVisibility="Auto">
-            <Canvas Name="canvas" DockPanel.Dock="Top" Height="900" Width="2000">
-                <Image Name="graph" Height="900" Width="2000" Source="{Binding BmpImage}">
+            <Canvas Name="canvas" DockPanel.Dock="Top">
+                <Image Name="graph" Source="{Binding BmpImage}">
 
                 </Image>
             </Canvas>

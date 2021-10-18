@@ -11,7 +11,7 @@ namespace MandelbrotMenge.ViewModel
 {
     public class BitmapPainter
     {
-        public BitmapImage PaintBitmap(int[,] map)
+        public BitmapImage PaintBitmap(uint[,] map)
         {
             Bitmap bmp = new Bitmap(map.GetLength(0), map.GetLength(1));
 
@@ -26,7 +26,7 @@ namespace MandelbrotMenge.ViewModel
             return this.BitmapToImageSource(bmp);
         }
 
-        private Color ChoosePaint(int iterations) => iterations switch
+        private Color ChoosePaint(uint iterations) => iterations switch
         {
             var x when x < 1 => Color.White,
             var x when x < 2 => Color.AntiqueWhite,
