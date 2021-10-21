@@ -8,6 +8,6 @@ namespace MandelbrotMenge.Interfaces
 {
     public interface IRequestHandler
     {
-        public Task<byte[]> PostAsync(string url, MandelbrotRequest req);
+        public Task<byte[]> PostMandelbrotAsync(string url, MandelbrotRequest req);
     }
 }

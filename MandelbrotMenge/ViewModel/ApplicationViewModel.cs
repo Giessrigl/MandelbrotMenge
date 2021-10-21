@@ -1,5 +1,8 @@
 ﻿using MandelbrotCommon;
+using MandelbrotCommon.Interfaces;
+using MandelbrotMenge.Commands;
 using MandelbrotMenge.Interfaces;
+using MandelbrotMenge.ResponseMapper;
 using System;
 using System.Buffers.Binary;
 using System.ComponentModel;
@@ -13,48 +16,24 @@ using Controls = System.Windows.Controls;
 
 namespace MandelbrotMenge.ViewModel
 {
-    public class ApplicationViewModel : INotifyPropertyChanged
+    public class ApplicationViewModel
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
         private readonly BitmapPainter bmpPainter;
 
-        private BitmapImage bmpImage;
+        public ImageVM Image
+        {
+            get;
+            private set;
+        }
 
         private IRequestHandler reqHandler;
 
-        public int Width
-        {
-            get;
-            set;
-        }
-
-        public int Height
-        {
-            get;
-            set;
-        }
+        private IResponseMapper<byte[], uint[,]> mapper;
 
         public CoordinateSystemAreaVM AffectedArea
         {
             get;
             set;
-        }
-
-        public BitmapImage BmpImage
-        {
-            get
-            {
-                return this.bmpImage;
-            }
-            private set
-            {
-                if (value != null)
-                {
-                    this.bmpImage = value;
-                    this.OnPropertyChanged();
-                }
-            }
         }
 
         public uint Iterations
@@ -65,11 +44,12 @@ namespace MandelbrotMenge.ViewModel
 
         public ApplicationViewModel()
         {
-            this.Width = 2000;
-            this.Height = 1000;
             this.bmpPainter = new BitmapPainter();
             this.reqHandler = new HttpRequestHandler();
             this.AffectedArea = new CoordinateSystemAreaVM(-2.15, 1, -1.5, 1.5);
+            this.Image = new ImageVM(1900, 900);
+            this.mapper = new MandelbrotMapper(this.Image);
+            this.Iterations = 100;
         }
 
         public ICommand CalculateCommand
@@ -81,11 +61,11 @@ namespace MandelbrotMenge.ViewModel
                     () => true,
                     async () =>
                     {
-                        var response = await this.reqHandler.PostAsync("https://localhost:44329",
+                        var response = await this.reqHandler.PostMandelbrotAsync("https://localhost:44329",
                                 new MandelbrotRequest()
                                 {
-                                    Width = this.Width,
-                                    Height = this.Height,
+                                    Width = this.Image.Width,
+                                    Height = this.Image.Height,
                                     Left = this.AffectedArea.Limit_XAxis_Left,
                                     Right = this.AffectedArea.Limit_XAxis_Right,
                                     Top = this.AffectedArea.Limit_YAxis_Top,
@@ -93,31 +73,11 @@ namespace MandelbrotMenge.ViewModel
                                     Iterations = this.Iterations
                                 });
 
-                        var map = this.Test(response, this.Width, this.Height);
-                        this.BmpImage = this.bmpPainter.PaintBitmap(map);
+                        var map = this.mapper.Map(response);
+                        this.Image.BmpImage = this.bmpPainter.PaintBitmap(map);
                     }
                 );
             }
-        }
-
-        private uint[,] Test(byte[] bytes, int width, int height)
-        {
-            uint[,] data = new uint[width, height];
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    int index = (y * width + x) * 4;
-                    data[x,y] = BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan().Slice(index, 4));
-                }
-            }
-
-            return data;
-        }
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MandelbrotCommon;
+using MandelbrotCommon.Interfaces;
 using MandelbrotServer.Calculator;
 using MandelbrotServer.ResponseWrapper;
 using Microsoft.AspNetCore.Mvc;
@@ -18,13 +19,13 @@ namespace MandelbrotServer.Controllers
     public class MandelbrotController : ControllerBase
     {
         private readonly IMandelbrotCalculator mbc;
-        private readonly IResponseWrapper<uint[], byte[]> wrapper;
+        private readonly IResponseMapper<uint[], byte[]> mapper;
 
         public MandelbrotController(IMandelbrotCalculator mbc, 
-                                    IResponseWrapper<uint[], byte[]> wrapper)
+                                    IResponseMapper<uint[], byte[]> wrapper)
         {
             this.mbc = mbc;
-            this.wrapper = wrapper;
+            this.mapper = wrapper;
         }
 
         [HttpPost]
@@ -32,7 +33,7 @@ namespace MandelbrotServer.Controllers
         {
             var result = await this.mbc.CalculateAsync(req);
             var reshapedResult = await this.ReshapeForStream(result);
-            var response = this.wrapper.Wrap(reshapedResult);
+            var response = this.mapper.Map(reshapedResult);
 
             Response.ContentType = "application/octet-stream";
             await Response.Body.WriteAsync(response, 0, response.Length);

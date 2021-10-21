@@ -12,7 +12,7 @@ namespace MandelbrotMenge.ViewModel
 {
     public class HttpRequestHandler : IRequestHandler
     {
-        public async Task<byte[]> PostAsync(string url, MandelbrotRequest req)
+        public async Task<byte[]> PostMandelbrotAsync(string url, MandelbrotRequest req)
         {
             Url Path = new Url(url);
             var response = await Path.AppendPathSegments("api", "mandelbrot").PostJsonAsync(req);

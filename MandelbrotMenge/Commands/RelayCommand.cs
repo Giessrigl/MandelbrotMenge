@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Input;
 
-namespace MandelbrotMenge.ViewModel
+namespace MandelbrotMenge.Commands
 {
     public class RelayCommand : ICommand
     {

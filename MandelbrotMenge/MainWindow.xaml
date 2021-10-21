@@ -23,9 +23,9 @@
                 <TextBox DockPanel.Dock="Left" Margin="10" FontSize="25" Text="{Binding Iterations}"></TextBox>
             </DockPanel>
         </StackPanel>
-        <ScrollViewer HorizontalScrollBarVisibility="Auto">
+        <ScrollViewer>
             <Canvas Name="canvas" DockPanel.Dock="Top">
-                <Image Name="graph" Source="{Binding BmpImage}">
+                <Image Name="graph" MaxHeight="850" MaxWidth="1900" Height="{Binding Image.Height}" Width="{Binding Image.Width}" Source="{Binding Image.BmpImage}">
 
                 </Image>
             </Canvas>

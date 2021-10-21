@@ -1,3 +1,4 @@
+using MandelbrotCommon.Interfaces;
 using MandelbrotServer.Calculator;
 using MandelbrotServer.ResponseWrapper;
 using Microsoft.AspNetCore.Builder;
@@ -31,7 +32,7 @@ namespace MandelbrotServer
             services.AddControllers();
 
             services.AddSingleton<IMandelbrotCalculator, StandardMandelbrotCalculator>();
-            services.AddSingleton<IResponseWrapper<uint[], byte[]>, OctetStreamWrapper>();
+            services.AddSingleton<IResponseMapper<uint[], byte[]>, OctetStreamMapper>();
 
             services.AddSwaggerGen(c =>
             {

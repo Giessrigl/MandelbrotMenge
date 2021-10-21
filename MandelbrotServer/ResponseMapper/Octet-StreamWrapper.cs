@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MandelbrotCommon.Interfaces;
+using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace MandelbrotServer.ResponseWrapper
 {
-    public class OctetStreamWrapper : IResponseWrapper<uint[], byte[]>
+    public class OctetStreamMapper : IResponseMapper<uint[], byte[]>
     {
-        public byte[] Wrap(uint[] input)
+        public byte[] Map(uint[] input)
         {
             var length = input.Length;
             Span<byte> result = new Span<byte>(new byte[4]);
