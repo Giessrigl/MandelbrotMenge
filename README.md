@@ -1,4 +1,5 @@
 # MandelbrotMenge
+This is the exercise of the Distributed Systems course in the fifth semester of my bachelor in computer science degree.
 
 ## Task 1
 Create an application which can display the mandelbrot set.
