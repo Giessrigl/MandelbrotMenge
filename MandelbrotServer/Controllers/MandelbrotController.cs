@@ -1,7 +1,7 @@
 ﻿using MandelbrotCommon;
 using MandelbrotCommon.Interfaces;
 using MandelbrotServer.Calculator;
-using MandelbrotServer.ResponseWrapper;
+using MandelbrotServer.ResponseMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -33,7 +33,7 @@ namespace MandelbrotServer.Controllers
         {
             var result = await this.mbc.CalculateAsync(req);
             var reshapedResult = await this.ReshapeForStream(result);
-            var response = this.mapper.Map(reshapedResult);
+            var response = this.mapper.Map(reshapedResult, 0, 0);
 
             Response.ContentType = "application/octet-stream";
             await Response.Body.WriteAsync(response, 0, response.Length);

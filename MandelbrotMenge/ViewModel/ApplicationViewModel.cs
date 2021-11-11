@@ -3,12 +3,14 @@ using MandelbrotCommon.Interfaces;
 using MandelbrotMenge.Commands;
 using MandelbrotMenge.Interfaces;
 using MandelbrotMenge.ResponseMapper;
+using MandelbrotMenge.Threading;
 using System;
 using System.Buffers.Binary;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -18,8 +20,6 @@ namespace MandelbrotMenge.ViewModel
 {
     public class ApplicationViewModel
     {
-        private readonly BitmapPainter bmpPainter;
-
         public ImageVM Image
         {
             get;
@@ -29,6 +29,8 @@ namespace MandelbrotMenge.ViewModel
         private IRequestHandler reqHandler;
 
         private IResponseMapper<byte[], uint[,]> mapper;
+
+        private Test test;
 
         public CoordinateSystemAreaVM AffectedArea
         {
@@ -44,12 +46,13 @@ namespace MandelbrotMenge.ViewModel
 
         public ApplicationViewModel()
         {
-            this.bmpPainter = new BitmapPainter();
+            
             this.reqHandler = new HttpRequestHandler();
             this.AffectedArea = new CoordinateSystemAreaVM(-2.15, 1, -1.5, 1.5);
             this.Image = new ImageVM(1900, 900);
             this.mapper = new MandelbrotMapper(this.Image);
             this.Iterations = 100;
+            this.test = new Test(this.reqHandler, this.mapper);
         }
 
         public ICommand CalculateCommand
@@ -59,22 +62,11 @@ namespace MandelbrotMenge.ViewModel
                 return new RelayCommand
                 (
                     () => true,
-                    async () =>
+                    () =>
                     {
-                        var response = await this.reqHandler.PostMandelbrotAsync("https://localhost:44329",
-                                new MandelbrotRequest()
-                                {
-                                    Width = this.Image.Width,
-                                    Height = this.Image.Height,
-                                    Left = this.AffectedArea.Limit_XAxis_Left,
-                                    Right = this.AffectedArea.Limit_XAxis_Right,
-                                    Top = this.AffectedArea.Limit_YAxis_Top,
-                                    Bottom = this.AffectedArea.Limit_YAxis_Bottom,
-                                    Iterations = this.Iterations
-                                });
+                        this.test.TestMethod(this.Image, this.AffectedArea, this.Iterations);
 
-                        var map = this.mapper.Map(response);
-                        this.Image.BmpImage = this.bmpPainter.PaintBitmap(map);
+                        
                     }
                 );
             }

@@ -5,11 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MandelbrotServer.ResponseWrapper
+namespace MandelbrotServer.ResponseMapper
 {
     public class OctetStreamMapper : IResponseMapper<uint[], byte[]>
     {
-        public byte[] Map(uint[] input)
+        public byte[] Map(uint[] input, int width, int height)
         {
             var length = input.Length;
             Span<byte> result = new Span<byte>(new byte[4]);

@@ -11,19 +11,29 @@ namespace MandelbrotMenge.ViewModel
 {
     public class BitmapPainter
     {
-        public BitmapImage PaintBitmap(uint[,] map)
+        private Bitmap bmp;
+
+        private object locker = new object();
+
+        public BitmapPainter(int width, int height)
         {
-            Bitmap bmp = new Bitmap(map.GetLength(0), map.GetLength(1));
+            this.bmp = new Bitmap(width, height);
+        }
 
-            for (int i = 0; i < map.GetLength(0); i++)
+        public BitmapImage PaintBitmap(int offsetX, int offsetY, uint[,] map)
+        {
+            lock(locker)
             {
-                for (int j = 0; j < map.GetLength(1); j++)
+                for (int i = 0; i < map.GetLength(0); i++)
                 {
-                    bmp.SetPixel(i, j, ChoosePaint(map[i, j]));
+                    for (int j = 0; j < map.GetLength(1); j++)
+                    {
+                        bmp.SetPixel(offsetX + i, offsetY + j, ChoosePaint(map[i, j]));
+                    }
                 }
-            }
 
-            return this.BitmapToImageSource(bmp);
+                return this.BitmapToImageSource(bmp);
+            }
         }
 
         private Color ChoosePaint(uint iterations) => iterations switch
@@ -58,7 +68,7 @@ namespace MandelbrotMenge.ViewModel
                 bitmapimage.StreamSource = memory;
                 bitmapimage.CacheOption = BitmapCacheOption.OnLoad;
                 bitmapimage.EndInit();
-
+                bitmapimage.Freeze();
                 return bitmapimage;
             }
         }

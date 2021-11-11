@@ -7,6 +7,6 @@ namespace MandelbrotCommon.Interfaces
 {
     public interface IResponseMapper<TInput, TOutput>
     {
-        TOutput Map(TInput input);
+        TOutput Map(TInput input, int width, int height);
     }
 }

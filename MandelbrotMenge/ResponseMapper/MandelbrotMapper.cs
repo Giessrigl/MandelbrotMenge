@@ -16,14 +16,14 @@ namespace MandelbrotMenge.ResponseMapper
             this.image = image;
         }
 
-        public uint[,] Map(byte[] input)
+        public uint[,] Map(byte[] input, int width, int height)
         {
-            uint[,] data = new uint[this.image.Width, this.image.Height];
-            for (int y = 0; y < this.image.Height; y++)
+            uint[,] data = new uint[width, height];
+            for (int y = 0; y < height; y++)
             {
-                for (int x = 0; x < this.image.Width; x++)
+                for (int x = 0; x < width; x++)
                 {
-                    int index = (y * this.image.Width + x) * 4;
+                    int index = (y * width + x) * 4;
                     data[x, y] = BinaryPrimitives.ReadUInt32LittleEndian(input.AsSpan().Slice(index, 4));
                 }
             }
