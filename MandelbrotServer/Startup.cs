@@ -1,6 +1,8 @@
 using MandelbrotCommon.Interfaces;
 using MandelbrotServer.Calculator;
 using MandelbrotServer.ResponseMapper;
+using MandelbrotServer.Services;
+using MandelbrotServer.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -31,7 +33,9 @@ namespace MandelbrotServer
         {
             services.AddControllers();
 
-            services.AddSingleton<IMandelbrotCalculator, StandardMandelbrotCalculator>();
+            services.AddSingleton<ISink, Sink>();
+            services.AddSingleton<IVentilator, Ventilator>();
+            services.AddTransient<CalculationSplitter, CalculationSplitter>();
             services.AddSingleton<IResponseMapper<uint[], byte[]>, OctetStreamMapper>();
 
             services.AddSwaggerGen(c =>

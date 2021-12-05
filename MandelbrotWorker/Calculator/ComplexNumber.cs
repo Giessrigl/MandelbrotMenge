@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace MandelbrotMenge.Calculator
+namespace MandelbrotWorker.Calculator
 {
     public class ComplexNumber
     {

@@ -1,16 +1,9 @@
 ﻿using MandelbrotCommon;
 using MandelbrotCommon.Interfaces;
-using MandelbrotServer.Calculator;
-using MandelbrotServer.ResponseMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Buffers.Binary;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using MandelbrotServer.Services.Interfaces;
+using MandelbrotServer.Services;
 
 namespace MandelbrotServer.Controllers
 {
@@ -18,20 +11,20 @@ namespace MandelbrotServer.Controllers
     [Route("/api/mandelbrot")]
     public class MandelbrotController : ControllerBase
     {
-        private readonly IMandelbrotCalculator mbc;
         private readonly IResponseMapper<uint[], byte[]> mapper;
+        private readonly RequestHandler reqHandler;
 
-        public MandelbrotController(IMandelbrotCalculator mbc, 
-                                    IResponseMapper<uint[], byte[]> wrapper)
+        public MandelbrotController(IResponseMapper<uint[], byte[]> wrapper, RequestHandler reqHandler)
         {
-            this.mbc = mbc;
             this.mapper = wrapper;
+            this.reqHandler = reqHandler;
         }
 
         [HttpPost]
         public async Task CalculateMandelbrot([FromBody] MandelbrotRequest req)
         {
-            var result = await this.mbc.CalculateAsync(req);
+            var result = this.reqHandler.ProcessRequest(req);
+
             var reshapedResult = await this.ReshapeForStream(result);
             var response = this.mapper.Map(reshapedResult, 0, 0);
 

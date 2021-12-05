@@ -1,11 +1,10 @@
 ﻿using MandelbrotCommon;
-using MandelbrotMenge.Calculator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MandelbrotServer.Calculator
+namespace MandelbrotWorker.Calculator
 {
     public class StandardMandelbrotCalculator : IMandelbrotCalculator
     {

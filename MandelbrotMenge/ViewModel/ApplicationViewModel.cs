@@ -65,8 +65,6 @@ namespace MandelbrotMenge.ViewModel
                     () =>
                     {
                         this.test.TestMethod(this.Image, this.AffectedArea, this.Iterations);
-
-                        
                     }
                 );
             }

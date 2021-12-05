@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MandelbrotServer.Calculator
+namespace MandelbrotWorker.Calculator
 {
     public interface IMandelbrotCalculator
     {
-        public Task<uint[,]> CalculateAsync(MandelbrotRequest req);
+        Task<uint[,]> CalculateAsync(MandelbrotRequest req);
     }
 }

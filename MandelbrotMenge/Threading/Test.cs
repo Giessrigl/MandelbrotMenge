@@ -25,6 +25,7 @@ namespace MandelbrotMenge.Threading
             this.blockPixelThickness = 3;
         }
 
+        // Splits the Image into small pieces and distributes them into threads.
         public void TestMethod(ImageVM image, CoordinateSystemAreaVM area, uint iterations)
         {
             this.bmPainter = new BitmapPainter(image.Width, image.Height);
@@ -56,6 +57,7 @@ namespace MandelbrotMenge.Threading
             }
         }
 
+        // Every Worker handles a portion of the Mandelbrot request.
         private async void Worker(object data)
         {
             if (! (data is ThreadArguments))
@@ -81,12 +83,13 @@ namespace MandelbrotMenge.Threading
             threadArgs.Image.BmpImage = this.bmPainter.PaintBitmap(threadArgs.StartX, threadArgs.StartY, map);
         }
 
+        // Calculates the new limits of a portion of the mandelbrot.
         private CoordinateSystemAreaVM CalculateBlock(CoordinateSystemAreaVM area, int height, int blockThickness)
         {
             var currentBlockBottom = area.Limit_YAxis_Bottom;
             double heightDelta = (blockThickness + 0.0) / height;
 
-            var absImageRangeY = this.CalculateAbsolute(area.Limit_YAxis_Bottom, area.Limit_YAxis_Top);
+            var absImageRangeY = this.CalculateDistance(area.Limit_YAxis_Bottom, area.Limit_YAxis_Top);
 
             area.Limit_YAxis_Bottom += heightDelta * absImageRangeY;
 
@@ -95,7 +98,8 @@ namespace MandelbrotMenge.Threading
             return result;
         }
 
-        private double CalculateAbsolute(double x, double y)
+        // Calculates the dicstance between two values.
+        private double CalculateDistance(double x, double y)
         {
             if (Math.Sign(x) == 1 && Math.Sign(y) == -1 ||
                 Math.Sign(x) == -1 && Math.Sign(y) == 1)
