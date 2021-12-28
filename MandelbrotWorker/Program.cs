@@ -21,9 +21,9 @@ namespace MandelbrotWorker
                 {
                     Console.WriteLine("Type in server ip address:");
                     var ip = Console.ReadLine();
-                    Console.WriteLine("Type in push port:");
+                    Console.WriteLine("Type in server push port:");
                     var push = Console.ReadLine();
-                    Console.WriteLine("Type in pull port:");
+                    Console.WriteLine("Type in server pull port:");
                     var pull = Console.ReadLine();
 
                     Application app = new Application(ip, push, pull);

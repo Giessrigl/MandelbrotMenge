@@ -1,21 +1,14 @@
 using MandelbrotCommon.Interfaces;
-using MandelbrotServer.Calculator;
 using MandelbrotServer.ResponseMapper;
 using MandelbrotServer.Services;
+using MandelbrotServer.Services.BackgroundServices;
 using MandelbrotServer.Services.Interfaces;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MandelbrotServer
 {
@@ -33,15 +26,19 @@ namespace MandelbrotServer
         {
             services.AddControllers();
 
-            services.AddSingleton<ISink, Sink>();
             services.AddSingleton<IVentilator, Ventilator>();
-            services.AddTransient<CalculationSplitter, CalculationSplitter>();
+            services.AddSingleton<SinkAdapter>();
+
+            services.AddTransient<RequestHandler>();
             services.AddSingleton<IResponseMapper<uint[], byte[]>, OctetStreamMapper>();
 
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MandelbrotServer", Version = "v1" });
             });
+
+            services.AddHostedService<VentilatorStarter>();
+            services.AddHostedService<Sink>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

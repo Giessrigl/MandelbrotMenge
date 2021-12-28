@@ -23,7 +23,6 @@ namespace MandelbrotWorker
         {
             using (var receiver = new PullSocket(">tcp://" + this.ip + ":" + this.port))
             {
-                receiver.Poll();
                 return receiver.ReceiveMultipartMessage(3);
             }
         }

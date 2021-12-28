@@ -8,7 +8,9 @@ namespace MandelbrotServer.Services.Interfaces
 {
     public interface ISink
     {
-        public event EventHandler<ProcessedBlockEventArgs> OnFinishedBlock;
-
+        public SinkAdapter adapter
+        {
+            get;
+        }
     }
 }

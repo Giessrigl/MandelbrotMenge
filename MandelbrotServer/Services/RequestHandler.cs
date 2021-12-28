@@ -12,9 +12,9 @@ namespace MandelbrotServer.Services
 {
     public class RequestHandler
     {
-        private readonly IVentilator vent;
+        private IVentilator vent;
 
-        private readonly ISink sink;
+        private SinkAdapter adapter;
 
         private string handlerID;
 
@@ -32,36 +32,37 @@ namespace MandelbrotServer.Services
 
         private object locker;
 
-        public RequestHandler(IVentilator vent, ISink sink)
+        public RequestHandler(IVentilator vent, SinkAdapter adapter)
         {
-            this.locker = new object();
             this.vent = vent;
-            this.sink = sink;
+            this.adapter = adapter;
 
+            this.locker = new object();
             this.handlerID = Guid.NewGuid().ToString();
-
             this.blockthickness = 100;
         }
 
-        public uint[,] ProcessRequest(MandelbrotRequest req)
+        public async Task<uint[,]> ProcessRequest(MandelbrotRequest req)
         {
-            this.sink.OnFinishedBlock += ComposeProcessedBlocks;
+            this.adapter.OnFinishedBlock += ComposeProcessedBlocks;
             this.calculatedMandelbrot = new uint[req.Width, req.Height];
-
-            this.reqHeight = req.Height;
-            this.reqWidth = req.Width;
 
             this.blocksInWidth = int.Parse(Math.Ceiling(((req.Width + 0.0) / blockthickness)).ToString());
             this.blocksInHeight = int.Parse(Math.Ceiling(((req.Height + 0.0) / blockthickness)).ToString());
 
+            this.reqHeight = req.Height;
+            this.reqWidth = req.Width;
+
             this.DistributeBlocks(req);
 
-            while (! this.CheckMandelbrotReady())
+            while (!this.CheckMandelbrotReady())
             {
                 Thread.Sleep(3000);
             }
 
-            return this.calculatedMandelbrot;
+            this.adapter.OnFinishedBlock -= ComposeProcessedBlocks;
+
+            return await Task.FromResult(this.calculatedMandelbrot);
         }
 
         private bool CheckMandelbrotReady()
@@ -82,14 +83,15 @@ namespace MandelbrotServer.Services
 
         private void ComposeProcessedBlocks(object sender, ProcessedBlockEventArgs e)
         {
-            if (e.Topic == this.handlerID)
-            {
-                var id = e.ID;
-                var data = e.Data;
+            if (e.Topic != this.handlerID)
+                return;
 
-                var offsets = this.CalculateOffset(id);
-                this.FillBlockIntoMandelbrot(offsets.Item1, offsets.Item2, data);
-            }
+            var id = e.ID;
+            var data = e.Data;
+
+            var offsets = this.CalculateOffset(id);
+            this.FillBlockIntoMandelbrot(offsets.Item1, offsets.Item2, data);
+            
         }
 
         private (int, int) CalculateOffset(uint id)
@@ -97,19 +99,21 @@ namespace MandelbrotServer.Services
             var blockOffsetTop = int.Parse( Math.Ceiling(id / (this.blocksInWidth + 0.0)).ToString() );
             var blockOffsetLeft = int.Parse((id % this.blocksInWidth).ToString());
 
-            blockOffsetTop
+            return (blockOffsetTop, blockOffsetLeft);
         }
 
-        private (int, int) CalculateProcessedBlockThickness()
+        private (int, int) CalculateProcessedBlockThickness(int offsetLeft, int offsetTop)
         {
-
+            throw new NotImplementedException();
         }
 
         private void FillBlockIntoMandelbrot(int offsetLeft, int offsetTop, byte[] data)
         {
-            lock(locker)
-            {
+            var thickness = this.CalculateProcessedBlockThickness(offsetLeft, offsetTop);
 
+            lock (locker)
+            {
+                
             }
         }
 
@@ -129,6 +133,7 @@ namespace MandelbrotServer.Services
             // the amount of blocks in the imagewidth
             var blockWidthAmount = Math.Ceiling((req.Width + (0.0)) / blockwidth);
 
+            // creates smaller blocks to calculate and pushes them to the worker queue
             this.id = 0;
             var tempHeight = req.Height;
             var tempWidth = req.Width;

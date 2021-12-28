@@ -67,7 +67,7 @@ namespace MandelbrotMenge.Threading
 
             var threadArgs = (ThreadArguments)data;
 
-            var response = await this.handler.PostMandelbrotAsync("https://localhost:44329",
+            var response = await this.handler.PostMandelbrotAsync("https://localhost:5001",
                                 new MandelbrotRequest()
                                 {
                                     Width = threadArgs.Blockwidth,
@@ -98,7 +98,7 @@ namespace MandelbrotMenge.Threading
             return result;
         }
 
-        // Calculates the dicstance between two values.
+        // Calculates the absolute difference between two numbers.
         private double CalculateDistance(double x, double y)
         {
             if (Math.Sign(x) == 1 && Math.Sign(y) == -1 ||
