@@ -25,20 +25,13 @@ namespace MandelbrotServer.Services.BackgroundServices
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Task.Yield();
-
             while (true)
             {
                 var message = this.receiver.ReceiveMultipartMessage(3);
 
-                var topic = message.Pop().ConvertToString();
-                var id = BinaryPrimitives.ReadUInt32LittleEndian(message.Pop().Buffer);
-                var data = message.Pop().Buffer;
-
                 this.adapter.FireOnFinishedBlock(new ProcessedBlockEventArgs()
                 {
-                    ID = id,
-                    Topic = topic,
-                    Data = data
+                    Message = message
                 });
             }
         }

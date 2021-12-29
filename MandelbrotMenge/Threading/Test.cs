@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MandelbrotMenge.Threading
 {
@@ -22,7 +23,7 @@ namespace MandelbrotMenge.Threading
         {
             this.handler = handler;
             this.mapper = mapper;
-            this.blockPixelThickness = 3;
+            this.blockPixelThickness = 300;
         }
 
         // Splits the Image into small pieces and distributes them into threads.
@@ -44,11 +45,11 @@ namespace MandelbrotMenge.Threading
 
                 var thread = new Thread(this.Worker);
                 thread.Start(new ThreadArguments(
-                                                 image, 
-                                                 image.Width, 
+                                                 image,
+                                                 image.Width,
                                                  blockThickness,
-                                                 offsetX, 
-                                                 offsetY, 
+                                                 offsetX,
+                                                 offsetY,
                                                  calculatedBlock,
                                                  iterations));
 
@@ -67,7 +68,9 @@ namespace MandelbrotMenge.Threading
 
             var threadArgs = (ThreadArguments)data;
 
-            var response = await this.handler.PostMandelbrotAsync("https://localhost:5001",
+            await Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                var response = await this.handler.PostMandelbrotAsync("https://localhost:44329",
                                 new MandelbrotRequest()
                                 {
                                     Width = threadArgs.Blockwidth,
@@ -79,8 +82,9 @@ namespace MandelbrotMenge.Threading
                                     Iterations = threadArgs.Iterations
                                 });
 
-            var map = this.mapper.Map(response, threadArgs.Blockwidth, threadArgs.Blockheight);
-            threadArgs.Image.BmpImage = this.bmPainter.PaintBitmap(threadArgs.StartX, threadArgs.StartY, map);
+                var map = this.mapper.Map(response, threadArgs.Blockwidth, threadArgs.Blockheight);
+                threadArgs.Image.BmpImage = this.bmPainter.PaintBitmap(threadArgs.StartX, threadArgs.StartY, map);
+            }));
         }
 
         // Calculates the new limits of a portion of the mandelbrot.

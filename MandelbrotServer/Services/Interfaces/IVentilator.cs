@@ -7,6 +7,6 @@ namespace MandelbrotServer.Services.Interfaces
 {
     public interface IVentilator
     {
-        public void PushToQueue(string topic, uint id, string data);
+        public void PushToQueue(string topic, string id, string data);
     }
 }

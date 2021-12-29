@@ -13,10 +13,10 @@ namespace MandelbrotWorker
         private readonly string ip;
         private readonly string port;
 
-        public Puller(string ip, string port)
+        public Puller(string ip, string ventPort)
         {
             this.ip = ip;
-            this.port = port;
+            this.port = ventPort;
         }
 
         public NetMQMessage Pull()

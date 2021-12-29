@@ -3,6 +3,7 @@ using MandelbrotCommon.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using MandelbrotServer.Services;
+using System.Threading;
 
 namespace MandelbrotServer.Controllers
 {

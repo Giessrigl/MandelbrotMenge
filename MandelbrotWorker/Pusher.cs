@@ -13,17 +13,17 @@ namespace MandelbrotWorker
         private readonly string ip;
         private readonly string port;
 
-        public Pusher(string ip, string port)
+        public Pusher(string ip, string sinkPort)
         {
             this.ip = ip;
-            this.port = port;
+            this.port = sinkPort;
         }
 
-        public void Push(NetMQMessage msg)
+        public void Push(string topic, string id, byte[] data)
         {
             using (var sender = new PushSocket(">tcp://" + this.ip + ":" + this.port))
             {
-                sender.SendMultipartMessage(msg);
+                sender.SendMoreFrame(topic).SendMoreFrame(id).SendFrame(data);
             }
         }
     }

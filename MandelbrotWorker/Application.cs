@@ -17,10 +17,10 @@ namespace MandelbrotWorker
         private readonly Puller puller;
         private readonly IMandelbrotCalculator calc;
 
-        public Application(string ip, string push, string pull)
+        public Application(string ip, string vent, string sink)
         {
-            this.pusher = new Pusher(ip, pull);
-            this.puller = new Puller(ip, push);
+            this.pusher = new Pusher(ip, sink);
+            this.puller = new Puller(ip, vent);
             this.calc = new StandardMandelbrotCalculator();
         }
 
@@ -30,10 +30,13 @@ namespace MandelbrotWorker
             {
                 var message = this.puller.Pull();
                 var msgParts = message.ToArray();
+
+                var topic = msgParts[0].ConvertToString();
+                var id = msgParts[1].ConvertToString();
                 var data = msgParts[2].ConvertToString();
                 
                 Console.WriteLine("Received message:");
-                Console.WriteLine($"Topic: {msgParts[0]} // Part: {msgParts[1]} // Json: {msgParts[2]}");
+                Console.WriteLine($"Topic: {topic} // Part: {id}");
                 Console.WriteLine("");
                 
                 var req = JsonSerializer.Deserialize<MandelbrotRequest>(data);
@@ -41,13 +44,7 @@ namespace MandelbrotWorker
 
                 var res = this.TransformResponse(tempRes);
 
-                NetMQMessage calculatedBlock = new NetMQMessage(new List<byte[]>{
-                                                                            msgParts[0].Buffer,
-                                                                            msgParts[1].Buffer,
-                                                                            res
-                                                                            });
-
-                this.pusher.Push(calculatedBlock);
+                this.pusher.Push(topic, id, res);
             }
         }
 
@@ -56,17 +53,22 @@ namespace MandelbrotWorker
             var width = data.GetLength(0);
             var heigth = data.GetLength(1);
 
-            Span<byte> result = new Span<byte>();
+            Span<byte> result = new Span<byte>(new byte[4]);
+            List<byte> output = new List<byte>(width * heigth * 4);
 
             for (int i = 0; i < width; i++)
             {
                 for (int j = 0; j < heigth; j++)
                 {
-                    BinaryPrimitives.WriteUInt32LittleEndian(result, data[i,j]);
+                    if (!BinaryPrimitives.TryWriteUInt32LittleEndian(result, data[i,j]))
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(result), "Could not write all bytes into the byte array.");
+                    }
                 }
+                output.AddRange(result.ToArray());
             }
 
-            return result.ToArray();
+            return output.ToArray();
         }
     }
 }
