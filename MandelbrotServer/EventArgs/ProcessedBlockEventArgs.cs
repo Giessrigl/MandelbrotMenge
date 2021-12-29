@@ -8,7 +8,19 @@ namespace MandelbrotServer.EventArgs
 {
     public class ProcessedBlockEventArgs
     {
-        public NetMQMessage Message
+        public byte[] Data
+        {
+            get;
+            set;
+        }
+
+        public string Topic
+        {
+            get;
+            set;
+        }
+
+        public uint ID
         {
             get;
             set;

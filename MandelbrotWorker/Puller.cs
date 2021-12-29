@@ -8,23 +8,23 @@ using System.Threading.Tasks;
 
 namespace MandelbrotWorker
 {
-    public class Puller
+    public class Puller : IDisposable
     {
-        private readonly string ip;
-        private readonly string port;
+        private PullSocket receiver;
 
         public Puller(string ip, string ventPort)
         {
-            this.ip = ip;
-            this.port = ventPort;
+            this.receiver = new PullSocket(">tcp://" + ip + ":" + ventPort);
+        }
+
+        public void Dispose()
+        {
+            this.receiver.Dispose();
         }
 
         public NetMQMessage Pull()
         {
-            using (var receiver = new PullSocket(">tcp://" + this.ip + ":" + this.port))
-            {
-                return receiver.ReceiveMultipartMessage(3);
-            }
+            return receiver.ReceiveMultipartMessage(3);
         }
     }
 }

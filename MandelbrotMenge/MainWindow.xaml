@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:MandelbrotMenge"
         xmlns:vm="clr-namespace:MandelbrotMenge.ViewModel"
         mc:Ignorable="d"
-        Title="MainWindow" Height="1000" Width="2000">
+        Title="MainWindow" Height="900" Width="1900">
     <Window.DataContext>
         <vm:ApplicationViewModel></vm:ApplicationViewModel>
     </Window.DataContext>

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MandelbrotServer.Services
 {
-    public class Ventilator : IVentilator
+    public class Ventilator : IVentilator, IDisposable
     {
         private object locker;
         private PushSocket sender;
@@ -20,12 +20,17 @@ namespace MandelbrotServer.Services
             this.sender = new PushSocket("@tcp://*:5557");
         }
 
+        public void Dispose()
+        {
+            this.sender.Dispose();
+        }
+
         // sends the data to process together with a topic and id of the portion to the Queue ready for the workers to process it.
-        public void PushToQueue(string topic, string id, string data)
+        public void PushToQueue(string data)
         {
             lock (locker)
             {
-                this.sender.SendMoreFrame(topic).SendMoreFrame(id).SendFrame(data);
+                this.sender.SendFrame(data);
             }
         }
     }

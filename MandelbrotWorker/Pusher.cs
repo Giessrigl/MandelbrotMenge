@@ -1,6 +1,7 @@
 ﻿using NetMQ;
 using NetMQ.Sockets;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,22 +9,29 @@ using System.Threading.Tasks;
 
 namespace MandelbrotWorker
 {
-    public class Pusher
+    public class Pusher : IDisposable
     {
-        private readonly string ip;
-        private readonly string port;
+        private PushSocket sender;
+        private object locker = new object();
 
         public Pusher(string ip, string sinkPort)
         {
-            this.ip = ip;
-            this.port = sinkPort;
+            this.sender = new PushSocket(">tcp://" + ip + ":" + sinkPort);
         }
 
-        public void Push(string topic, string id, byte[] data)
+        public void Dispose()
         {
-            using (var sender = new PushSocket(">tcp://" + this.ip + ":" + this.port))
+            this.sender.Dispose();
+        }
+
+        public void Push(string topic, uint id, byte[] data)
+        {
+            var IDbytes = new byte[4];
+            BinaryPrimitives.WriteUInt32LittleEndian(IDbytes, id);
+
+            lock(locker)
             {
-                sender.SendMoreFrame(topic).SendMoreFrame(id).SendFrame(data);
+                this.sender.SendMoreFrame(topic).SendMoreFrame(IDbytes).SendFrame(data);
             }
         }
     }

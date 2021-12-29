@@ -13,6 +13,7 @@ namespace MandelbrotServer.Controllers
     {
         private readonly IResponseMapper<uint[], byte[]> mapper;
         private readonly RequestHandler reqHandler;
+        private readonly object locker = new object();
 
         public MandelbrotController(IResponseMapper<uint[], byte[]> wrapper, RequestHandler reqHandler)
         {

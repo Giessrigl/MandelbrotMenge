@@ -16,6 +16,7 @@ namespace MandelbrotMenge.Threading
         private IRequestHandler handler;
         private IResponseMapper<byte[], uint[,]> mapper;
         private BitmapPainter bmPainter;
+        private object locker = new object();
 
         private int blockPixelThickness;
 
@@ -23,7 +24,7 @@ namespace MandelbrotMenge.Threading
         {
             this.handler = handler;
             this.mapper = mapper;
-            this.blockPixelThickness = 300;
+            this.blockPixelThickness = 100;
         }
 
         // Splits the Image into small pieces and distributes them into threads.
@@ -59,7 +60,7 @@ namespace MandelbrotMenge.Threading
         }
 
         // Every Worker handles a portion of the Mandelbrot request.
-        private async void Worker(object data)
+        private void Worker(object data)
         {
             if (! (data is ThreadArguments))
             {
@@ -68,23 +69,23 @@ namespace MandelbrotMenge.Threading
 
             var threadArgs = (ThreadArguments)data;
 
-            await Application.Current.Dispatcher.BeginInvoke(new Action(async () =>
-            {
-                var response = await this.handler.PostMandelbrotAsync("https://localhost:44329",
-                                new MandelbrotRequest()
-                                {
-                                    Width = threadArgs.Blockwidth,
-                                    Height = threadArgs.Blockheight,
-                                    Left = threadArgs.Area.Limit_XAxis_Left,
-                                    Right = threadArgs.Area.Limit_XAxis_Right,
-                                    Top = threadArgs.Area.Limit_YAxis_Top,
-                                    Bottom = threadArgs.Area.Limit_YAxis_Bottom,
-                                    Iterations = threadArgs.Iterations
-                                });
+            var response = this.handler.PostMandelbrotAsync("https://localhost:44329",
+                            new MandelbrotRequest()
+                            {
+                                Width = threadArgs.Blockwidth,
+                                Height = threadArgs.Blockheight,
+                                Left = threadArgs.Area.Limit_XAxis_Left,
+                                Right = threadArgs.Area.Limit_XAxis_Right,
+                                Top = threadArgs.Area.Limit_YAxis_Top,
+                                Bottom = threadArgs.Area.Limit_YAxis_Bottom,
+                                Iterations = threadArgs.Iterations
+                            }).GetAwaiter().GetResult();
 
-                var map = this.mapper.Map(response, threadArgs.Blockwidth, threadArgs.Blockheight);
+            var map = this.mapper.Map(response, threadArgs.Blockwidth, threadArgs.Blockheight);
+            lock(locker)
+            {
                 threadArgs.Image.BmpImage = this.bmPainter.PaintBitmap(threadArgs.StartX, threadArgs.StartY, map);
-            }));
+            }
         }
 
         // Calculates the new limits of a portion of the mandelbrot.

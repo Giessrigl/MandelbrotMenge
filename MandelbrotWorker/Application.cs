@@ -1,13 +1,10 @@
 ﻿using MandelbrotCommon;
 using MandelbrotWorker.Calculator;
-using NetMQ;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace MandelbrotWorker
 {
@@ -26,46 +23,61 @@ namespace MandelbrotWorker
 
         public void Start()
         {
-            while(true)
+            try
             {
-                var message = this.puller.Pull();
-                var msgParts = message.ToArray();
+                while (true)
+                {
+                    var message = this.puller.Pull();
+                    var msgParts = message.ToArray();
 
-                var topic = msgParts[0].ConvertToString();
-                var id = msgParts[1].ConvertToString();
-                var data = msgParts[2].ConvertToString();
-                
-                Console.WriteLine("Received message:");
-                Console.WriteLine($"Topic: {topic} // Part: {id}");
-                Console.WriteLine("");
-                
-                var req = JsonSerializer.Deserialize<MandelbrotRequest>(data);
-                var tempRes = this.calc.CalculateAsync(req).GetAwaiter().GetResult();
+                    var req = JsonSerializer.Deserialize<MandelbrotWorkerRequest>(msgParts[0].ConvertToString());
 
-                var res = this.TransformResponse(tempRes);
+                    Console.WriteLine("Received message:");
+                    Console.WriteLine($"Topic: {req.Topic} // Part: {req.Id}");
+                    Console.WriteLine("");
 
-                this.pusher.Push(topic, id, res);
+                    MandelbrotRequest req1 = new MandelbrotRequest()
+                    {
+                        Top = req.Top,
+                        Bottom = req.Bottom,
+                        Left = req.Left,
+                        Right = req.Right,
+                        Iterations = req.Iterations,
+                        Height = req.Height,
+                        Width = req.Width,
+                    };
+
+                    var tempRes = this.calc.CalculateAsync(req1).GetAwaiter().GetResult();
+
+                    var res = this.TransformResponse(tempRes);
+
+                    this.pusher.Push(req.Topic, req.Id, res);
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 
         private byte[] TransformResponse(uint[,] data)
         {
             var width = data.GetLength(0);
-            var heigth = data.GetLength(1);
+            var height = data.GetLength(1);
 
             Span<byte> result = new Span<byte>(new byte[4]);
-            List<byte> output = new List<byte>(width * heigth * 4);
+            List<byte> output = new List<byte>(data.Length * 4);
 
-            for (int i = 0; i < width; i++)
+            for (int x = 0; x < width; x++)
             {
-                for (int j = 0; j < heigth; j++)
+                for (int y = 0; y < height; y++)
                 {
-                    if (!BinaryPrimitives.TryWriteUInt32LittleEndian(result, data[i,j]))
+                    if (!BinaryPrimitives.TryWriteUInt32LittleEndian(result, data[x,y]))
                     {
                         throw new ArgumentOutOfRangeException(nameof(result), "Could not write all bytes into the byte array.");
                     }
+                    output.AddRange(result.ToArray());
                 }
-                output.AddRange(result.ToArray());
             }
 
             return output.ToArray();
