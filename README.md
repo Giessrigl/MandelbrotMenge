@@ -16,4 +16,4 @@ These chunks will be sent to the server (for this task one server handles all of
 ## Task 4
 Let workers do the calculation instead of the server.
 Server queues up chunks of the image in even smaller chunks for the workers to calculate and send them back to the server.
-The server puts the smaller chunks together to send them back to the client, where the whole picture will be put together again.
+The server puts the received smaller chunks together to send them back to the client, where the whole picture will be put together again.
